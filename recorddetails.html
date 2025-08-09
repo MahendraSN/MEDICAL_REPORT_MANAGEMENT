@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Record Details - Medical Report Management</title>
+  <style>body{font-family:Arial;margin:30px} input,button{padding:8px;margin:6px 0;width:100%} pre{background:#f4f4f4;padding:10px} .card{max-width:700px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Get Medical Record</h2>
+    <label>Record ID:</label><input id="recordId" placeholder="R1">
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="getRecordBtn">Get Record</button>
+    <h3>Output</h3><pre id="output">Not connected</pre>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+<script>
+const CONTRACT_ABI = [/* REPLACE WITH YOUR CONTRACT ABI */];
+const CONTRACT_ADDRESS = "REPLACE_WITH_CONTRACT_ADDRESS";
+let web3, contract, accounts;
+async function init(){ if(window.ethereum){ web3 = new Web3(window.ethereum); accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }); contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS); document.getElementById('output').textContent = "Connected: " + accounts[0]; } else document.getElementById('output').textContent = "MetaMask required."; }
+document.getElementById('connectBtn').onclick = init;
+
+document.getElementById('getRecordBtn').onclick = async () => {
+  const id = document.getElementById('recordId').value;
+  if(!contract){ document.getElementById('output').textContent = "Connect first"; return; }
+  try{
+    const data = await contract.methods.getRecord(id).call();
+    document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+  }catch(err){ document.getElementById('output').textContent = "Error: " + err.message; }
+};
+</script>
+</body>
+</html>
