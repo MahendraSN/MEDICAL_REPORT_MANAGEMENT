@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Add Examination - Medical Report Management</title>
+  <style>body{font-family:Arial;margin:30px} input,textarea,button{padding:8px;margin:6px 0;width:100%} pre{background:#f4f4f4;padding:10px} .card{max-width:700px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Record Examination</h2>
+
+    <label>Examination ID:</label><input id="examId" placeholder="E1">
+    <label>Patient ID:</label><input id="examPatientId" placeholder="P123">
+    <label>Doctor ID:</label><input id="examDoctorId" placeholder="D123">
+    <label>Hospital ID:</label><input id="examHospitalId" placeholder="H1">
+    <label>Diagnosis / Notes:</label><textarea id="examNotes" rows="4" placeholder="Diagnosis details..."></textarea>
+    <label>Prescription (optional):</label><textarea id="examPrescription" rows="2" placeholder="Rx..."></textarea>
+
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="recordExamBtn">Record Examination</button>
+
+    <h3>Result</h3><pre id="result"></pre>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+<script>
+const CONTRACT_ABI = [/* REPLACE WITH YOUR CONTRACT ABI */];
+const CONTRACT_ADDRESS = "REPLACE_WITH_CONTRACT_ADDRESS";
+let web3, contract, accounts;
+async function init(){
+  if(window.ethereum){
+    web3 = new Web3(window.ethereum);
+    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    document.getElementById('result').textContent = "Connected: " + accounts[0];
+  } else document.getElementById('result').textContent = "MetaMask required.";
+}
+document.getElementById('connectBtn').onclick = init;
+
+document.getElementById('recordExamBtn').onclick = async () => {
+  const id = document.getElementById('examId').value;
+  const pid = document.getElementById('examPatientId').value;
+  const did = document.getElementById('examDoctorId').value;
+  const hid = document.getElementById('examHospitalId').value;
+  const notes = document.getElementById('examNotes').value;
+  const rx = document.getElementById('examPrescription').value;
+
+  if(!contract){ document.getElementById('result').textContent = "Connect first"; return; }
+  try{
+    // Example method name - adjust to your contract
+    const tx = await contract.methods.addExamination(id, pid, did, hid, notes, rx).send({ from: accounts[0] });
+    document.getElementById('result').textContent = "Recorded:\n" + JSON.stringify(tx, null, 2);
+  }catch(err){ document.getElementById('result').textContent = "Error:\n" + err.message; }
+};
+</script>
+</body>
+</html>
