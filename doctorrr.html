@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Register Doctor - Medical Report Management</title>
+  <style>
+    body{font-family:Arial;margin:30px} input,button{padding:8px;margin:6px 0;width:100%} .card{max-width:600px}
+    label{font-weight:600}
+    pre{background:#f4f4f4;padding:10px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Register Doctor</h2>
+    <p>Connect with MetaMask, fill details and register doctor on-chain.</p>
+
+    <label>Doctor ID (uint or string):</label>
+    <input id="doctorId" placeholder="e.g. 1 or D123">
+
+    <label>Name:</label>
+    <input id="doctorName" placeholder="Dr. John Doe">
+
+    <label>Specialization:</label>
+    <input id="doctorSpec" placeholder="Cardiology">
+
+    <label>Hospital ID:</label>
+    <input id="doctorHospital" placeholder="H1">
+
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="registerDoctorBtn">Register Doctor</button>
+
+    <h3>Result</h3>
+    <pre id="result"></pre>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+<script>
+const CONTRACT_ABI = [/* REPLACE WITH YOUR CONTRACT ABI */];
+const CONTRACT_ADDRESS = "REPLACE_WITH_CONTRACT_ADDRESS";
+
+let web3, contract, accounts;
+
+async function init(){
+  if(window.ethereum){
+    web3 = new Web3(window.ethereum);
+    try{
+      accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      document.getElementById('result').textContent = "Connected: " + accounts[0];
+    }catch(err){
+      document.getElementById('result').textContent = "Connection rejected.";
+    }
+  } else {
+    document.getElementById('result').textContent = "MetaMask not detected. Install MetaMask.";
+  }
+}
+
+document.getElementById('connectBtn').onclick = init;
+
+document.getElementById('registerDoctorBtn').onclick = async () => {
+  const id = document.getElementById('doctorId').value;
+  const name = document.getElementById('doctorName').value;
+  const spec = document.getElementById('doctorSpec').value;
+  const hospital = document.getElementById('doctorHospital').value;
+
+  if(!contract){ document.getElementById('result').textContent = "Connect wallet first."; return; }
+
+  try{
+    // Adjust method name & params to match your contract
+    const tx = await contract.methods.addDoctor(id, name, spec, hospital).send({ from: accounts[0] });
+    document.getElementById('result').textContent = "Transaction success:\n" + JSON.stringify(tx, null, 2);
+  }catch(err){
+    document.getElementById('result').textContent = "Error:\n" + err.message;
+  }
+};
+</script>
+</body>
+</html>
