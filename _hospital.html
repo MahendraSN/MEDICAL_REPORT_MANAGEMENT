@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Register Hospital - Medical Report Management</title>
+  <style>body{font-family:Arial;margin:30px} input,button{padding:8px;margin:6px 0;width:100%} pre{background:#f4f4f4;padding:10px} .card{max-width:600px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Register Hospital</h2>
+
+    <label>Hospital ID:</label><input id="hospitalId" placeholder="H1">
+    <label>Name:</label><input id="hospitalName" placeholder="City Hospital">
+    <label>Address:</label><input id="hospitalAddress" placeholder="Address">
+    <label>Contact:</label><input id="hospitalContact" placeholder="+91...">
+
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="registerHospitalBtn">Register Hospital</button>
+
+    <h3>Result</h3><pre id="result"></pre>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+<script>
+const CONTRACT_ABI = [/* REPLACE WITH YOUR CONTRACT ABI */];
+const CONTRACT_ADDRESS = "REPLACE_WITH_CONTRACT_ADDRESS";
+let web3, contract, accounts;
+async function init(){ if(window.ethereum){ web3 = new Web3(window.ethereum); accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }); contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS); document.getElementById('result').textContent = "Connected: " + accounts[0]; } else document.getElementById('result').textContent = "MetaMask required."; }
+document.getElementById('connectBtn').onclick = init;
+
+document.getElementById('registerHospitalBtn').onclick = async () => {
+  const id = document.getElementById('hospitalId').value;
+  const name = document.getElementById('hospitalName').value;
+  const addressVal = document.getElementById('hospitalAddress').value;
+  const contact = document.getElementById('hospitalContact').value;
+  if(!contract){ document.getElementById('result').textContent = "Connect first"; return; }
+  try{
+    const tx = await contract.methods.addHospital(id, name, addressVal, contact).send({ from: accounts[0] });
+    document.getElementById('result').textContent = "Success:\n" + JSON.stringify(tx, null, 2);
+  }catch(err){ document.getElementById('result').textContent = "Error:\n" + err.message; }
+};
+</script>
+</body>
+</html>
