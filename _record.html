@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Add Medical Record - Medical Report Management</title>
+  <style>body{font-family:Arial;margin:30px} input,textarea,button{padding:8px;margin:6px 0;width:100%} pre{background:#f4f4f4;padding:10px} .card{max-width:700px}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Add Medical Record</h2>
+
+    <label>Record ID:</label><input id="recordId" placeholder="R1">
+    <label>Patient ID:</label><input id="recordPatientId" placeholder="P123">
+    <label>Title:</label><input id="recordTitle" placeholder="Blood Report">
+    <label>Description / Link (IPFS hash or URL):</label><textarea id="recordDesc" rows="3"></textarea>
+
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="addRecordBtn">Add Record</button>
+
+    <h3>Result</h3><pre id="result"></pre>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+<script>
+const CONTRACT_ABI = [/* REPLACE WITH YOUR CONTRACT ABI */];
+const CONTRACT_ADDRESS = "REPLACE_WITH_CONTRACT_ADDRESS";
+let web3, contract, accounts;
+async function init(){
+  if(window.ethereum){
+    web3 = new Web3(window.ethereum);
+    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    document.getElementById('result').textContent = "Connected: " + accounts[0];
+  } else document.getElementById('result').textContent = "MetaMask required.";
+}
+document.getElementById('connectBtn').onclick = init;
+
+document.getElementById('addRecordBtn').onclick = async () => {
+  const id = document.getElementById('recordId').value;
+  const pid = document.getElementById('recordPatientId').value;
+  const title = document.getElementById('recordTitle').value;
+  const desc = document.getElementById('recordDesc').value;
+
+  if(!contract){ document.getElementById('result').textContent = "Connect first"; return; }
+  try{
+    const tx = await contract.methods.addRecord(id, pid, title, desc).send({ from: accounts[0] });
+    document.getElementById('result').textContent = "Added:\n" + JSON.stringify(tx, null, 2);
+  }catch(err){ document.getElementById('result').textContent = "Error:\n" + err.message; }
+};
+</script>
+</body>
+</html>
